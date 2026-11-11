@@ -1,0 +1,89 @@
+{
+  "routes": [
+    {
+      "path": "/sitemap.xml",
+      "responses": [
+        {
+          "body": "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><sitemap><loc>/pages.xml</loc></sitemap></sitemapindex>",
+          "headers": {
+            "Content-Type": "application/xml"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/pages.xml",
+      "responses": [
+        {
+          "body": "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><url><loc>/article/a?utm_source=manual</loc></url><url><loc>/article/a</loc></url></urlset>",
+          "headers": {
+            "Content-Type": "application/xml"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/article/a",
+      "responses": [
+        {
+          "body": "<html lang=\"zh\"><head><meta charset=\"utf-8\"><link rel=\"canonical\" href=\"/article/a\"></head><body><nav>站点导航</nav><main><h1>冷却系统维护</h1><p>关闭进水阀后检查密封。</p><ul><li>记录压力</li><li>记录温度</li></ul><table><tr><th>部件</th><th>周期</th></tr><tr><td>滤芯</td><td>三个月</td></tr></table><span hidden>内部隐藏提示</span></main><a rel=\"next\" href=\"/article/a/2\">下一页</a><script>void 0</script></body></html>",
+          "headers": {
+            "ETag": "\"a-v1\"",
+            "Content-Type": "text/html; charset=utf-8"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/article/a/2",
+      "responses": [
+        {
+          "body": "<html><main><p>恢复进水并确认没有渗漏。</p></main></html>",
+          "headers": {
+            "ETag": "\"a2-v1\"",
+            "Content-Type": "text/html; charset=utf-8"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/article/missing",
+      "responses": [
+        {
+          "body": "<html><nav>维护中</nav></html>"
+        }
+      ]
+    },
+    {
+      "path": "/article/loop",
+      "responses": [
+        {
+          "body": "<main>分页环示例</main><a rel=\"next\" href=\"/article/loop\">下一页</a>"
+        }
+      ]
+    },
+    {
+      "path": "/article/gb",
+      "responses": [
+        {
+          "body": "<main>压差表读数需要人工确认。</main>",
+          "encoding": "gb18030",
+          "headers": {
+            "Content-Type": "text/html; charset=gb18030"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/article/redirect",
+      "responses": [
+        {
+          "status": 302,
+          "headers": {
+            "Location": "http://outside.invalid/article"
+          }
+        }
+      ]
+    }
+  ]
+}
