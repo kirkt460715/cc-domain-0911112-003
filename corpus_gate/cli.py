@@ -8,6 +8,7 @@ from corpus_gate.ingest import sources, formats, bundles
 from corpus_gate.text import profiles
 from corpus_gate.dedup import clusters
 from corpus_gate.releases import manifests, exporting, transfer
+from corpus_gate.crawl import engine as crawl_engine, parsers as crawl_parsers
 
 
 def read(path, maximum=33554432):
@@ -86,6 +87,32 @@ def parser():
     sub.add_parser('check')
     sub.add_parser('overview')
     sub.add_parser('operations')
+    crawl = sub.add_parser('crawl')
+    crawl.add_argument('job_id')
+    crawl.add_argument('--source', required=True)
+    crawl.add_argument('--sitemap', required=True)
+    crawl.add_argument('--context', required=True)
+    crawl.add_argument('--parser')
+    crawl.add_argument('--profile')
+    recrawl = sub.add_parser('recrawl')
+    recrawl.add_argument('--source', required=True)
+    recrawl.add_argument('--url', required=True)
+    recrawl.add_argument('--context', required=True)
+    recrawl.add_argument('--parser')
+    recrawl.add_argument('--profile')
+    reextract = sub.add_parser('reextract')
+    reextract.add_argument('--source', required=True)
+    reextract.add_argument('--parser')
+    reextract.add_argument('--profile')
+    crawl_parser = sub.add_parser('crawl-parser')
+    crawl_parser.add_argument('parser_id')
+    crawl_parser.add_argument('--revision', required=True, type=int)
+    crawl_parser.add_argument('--input', required=True)
+    crawl_article = sub.add_parser('crawl-article')
+    crawl_article.add_argument('--source', required=True)
+    crawl_article.add_argument('--url', required=True)
+    crawl_job = sub.add_parser('crawl-job')
+    crawl_job.add_argument('job_id')
     demo = sub.add_parser('demo')
     demo.add_argument('--fixture', required=True)
     return root
@@ -162,6 +189,18 @@ def execute(app, args):
         return inspection.overview(app.db)
     if args.command == 'operations':
         return [{'operation': key, 'required': required.split(), 'optional': optional.split()} for key, (_, required, optional) in sorted(app.operations().items())]
+    if args.command == 'crawl':
+        return crawl_engine.start(app.db, args.job_id, args.source, args.sitemap, json_file(args.context), parser_id=args.parser, profile_id=args.profile)
+    if args.command == 'recrawl':
+        return crawl_engine.recrawl(app.db, args.source, args.url, json_file(args.context), parser_id=args.parser, profile_id=args.profile)
+    if args.command == 'reextract':
+        return crawl_engine.reextract(app.db, args.source, parser_id=args.parser, profile_id=args.profile)
+    if args.command == 'crawl-parser':
+        return crawl_parsers.put(app.db, args.parser_id, args.revision, json_file(args.input))
+    if args.command == 'crawl-article':
+        return crawl_engine.article(app.db, args.source, args.url)
+    if args.command == 'crawl-job':
+        return crawl_engine.job(app.db, args.job_id)
     if args.command == 'demo':
         return demonstrate(app, json_file(args.fixture))
     fail('command', 'Unsupported command')

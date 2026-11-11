@@ -12,6 +12,7 @@ from corpus_gate.review.appeals import Appeals
 from corpus_gate.releases import manifests, exporting, selection
 from corpus_gate.releases.transfer import Receiver
 from corpus_gate.releases.withdrawals import Notices
+from corpus_gate.crawl import engine as crawl_engine, parsers as crawl_parsers
 
 
 class CorpusGate:
@@ -171,6 +172,17 @@ class CorpusGate:
             'system.quality': (bind(inspection.quality_report), '', 'source_id'),
             'system.source_impact': (bind(inspection.source_impact), 'source_id', ''),
             'audit.page': (bind(inspection.audit_page), '', 'after limit'),
+            'crawl.parser.put': (bind(crawl_parsers.put), 'parser_id expected_revision definition', ''),
+            'crawl.parser.get': (bind(crawl_parsers.get), 'parser_id', 'revision'),
+            'crawl.parser.list': (bind(crawl_parsers.listing), '', ''),
+            'crawl.start': (bind(crawl_engine.start), 'job_id source_id sitemap_url context', 'parser_id profile_id'),
+            'crawl.job': (bind(crawl_engine.job), 'job_id', ''),
+            'crawl.jobs': (bind(crawl_engine.jobs), '', ''),
+            'crawl.failures': (bind(crawl_engine.failures), 'job_id', ''),
+            'crawl.article': (bind(crawl_engine.article), 'source_id url', ''),
+            'crawl.articles': (bind(crawl_engine.articles), 'source_id', ''),
+            'crawl.recrawl': (bind(crawl_engine.recrawl), 'source_id url context', 'parser_id profile_id'),
+            'crawl.reextract': (bind(crawl_engine.reextract), 'source_id', 'parser_id profile_id'),
         }
 
     def transaction(self, requests):

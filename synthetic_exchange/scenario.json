@@ -15,7 +15,7 @@
       "path": "/pages.xml",
       "responses": [
         {
-          "body": "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><url><loc>/article/a?utm_source=manual</loc></url><url><loc>/article/a</loc></url></urlset>",
+          "body": "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><url><loc>/article/a?utm_source=manual</loc></url><url><loc>/article/a</loc></url><url><loc>/article/missing</loc></url><url><loc>/article/loop</loc></url><url><loc>/article/gb</loc></url><url><loc>/article/redirect</loc></url></urlset>",
           "headers": {
             "Content-Type": "application/xml"
           }

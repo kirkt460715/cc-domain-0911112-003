@@ -26,6 +26,14 @@ CREATE TABLE IF NOT EXISTS releases(release_id TEXT PRIMARY KEY,revision INTEGER
 CREATE TABLE IF NOT EXISTS release_members(release_id TEXT NOT NULL REFERENCES releases(release_id),document_id TEXT NOT NULL,cluster_id TEXT NOT NULL,split TEXT NOT NULL,ordinal INTEGER NOT NULL,payload TEXT NOT NULL,digest TEXT NOT NULL,PRIMARY KEY(release_id,document_id));
 CREATE TABLE IF NOT EXISTS release_events(event_id INTEGER PRIMARY KEY AUTOINCREMENT,release_id TEXT NOT NULL,action TEXT NOT NULL,body TEXT NOT NULL,at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(position INTEGER PRIMARY KEY AUTOINCREMENT,action TEXT NOT NULL,payload TEXT NOT NULL,previous_hash TEXT NOT NULL,entry_hash TEXT NOT NULL,at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS crawl_parsers(parser_id TEXT PRIMARY KEY,revision INTEGER NOT NULL,definition TEXT NOT NULL,digest TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS crawl_parser_history(parser_id TEXT NOT NULL,revision INTEGER NOT NULL,definition TEXT NOT NULL,digest TEXT NOT NULL,PRIMARY KEY(parser_id,revision));
+CREATE TABLE IF NOT EXISTS crawl_jobs(job_id TEXT PRIMARY KEY,source_id TEXT NOT NULL REFERENCES sources(source_id),seed_url TEXT NOT NULL,state TEXT NOT NULL,parser_id TEXT NOT NULL,parser_revision INTEGER NOT NULL,summary TEXT NOT NULL,created_at TEXT NOT NULL,finished_at TEXT);
+CREATE TABLE IF NOT EXISTS crawl_pages(source_id TEXT NOT NULL,url TEXT NOT NULL,canonical_url TEXT,ordinal INTEGER NOT NULL DEFAULT 0,status_code INTEGER NOT NULL,etag TEXT,last_modified TEXT,content_type TEXT,encoding TEXT,raw_body BLOB NOT NULL,body_sha256 TEXT NOT NULL,parser_revision INTEGER NOT NULL,fetched_at TEXT NOT NULL,PRIMARY KEY(source_id,url));
+CREATE TABLE IF NOT EXISTS crawl_urls(source_id TEXT NOT NULL,url TEXT NOT NULL,canonical_url TEXT NOT NULL,discovered_via TEXT NOT NULL,PRIMARY KEY(source_id,url));
+CREATE TABLE IF NOT EXISTS crawl_articles(source_id TEXT NOT NULL,canonical_url TEXT NOT NULL,external_id TEXT NOT NULL,document_id TEXT,latest_version INTEGER NOT NULL DEFAULT 0,latest_content_hash TEXT,parser_revision INTEGER NOT NULL,first_seen TEXT NOT NULL,last_crawled TEXT NOT NULL,PRIMARY KEY(source_id,canonical_url));
+CREATE TABLE IF NOT EXISTS crawl_evidence(source_id TEXT NOT NULL,canonical_url TEXT NOT NULL,version INTEGER NOT NULL,job_id TEXT NOT NULL,parser_revision INTEGER NOT NULL,content_hash TEXT NOT NULL,pages TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(source_id,canonical_url,version));
+CREATE TABLE IF NOT EXISTS crawl_failures(failure_id INTEGER PRIMARY KEY AUTOINCREMENT,job_id TEXT NOT NULL,source_id TEXT NOT NULL,url TEXT NOT NULL,stage TEXT NOT NULL,code TEXT NOT NULL,reason TEXT NOT NULL,at TEXT NOT NULL);
 '''
 
 
@@ -38,11 +46,11 @@ class Database:
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.execute('PRAGMA synchronous=FULL')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version not in (0, 1):
+        if version not in (0, 1, 2):
             self.db.close()
             fail('database_version', 'Unsupported corpus database version')
         self.db.executescript(DDL)
-        self.db.execute('PRAGMA user_version=1')
+        self.db.execute('PRAGMA user_version=2')
         self.depth = 0
 
     def close(self):
